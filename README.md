@@ -1,8 +1,8 @@
 # DATA 598 Capstone
 
-### Instructions
+## Instructions
 
-Overview:
+### Overview:
 
 The capstone will assess your ability to prepare a technical report as well as
 produce calibrated predicted sample paths for stock closing prices.
@@ -17,7 +17,7 @@ Forecasts will be evaluated based on the continuous ranked probability score (CR
 
 ![](docs/CRPS_Formula.png)
 
-Report:
+### Report:
 
 It is expected that 6 distinct reports detailing the analysis and approach are to be uploaded in pdf format following
 the naming convention report_stocks_group#.pdf, where group# is replaced with your
@@ -34,7 +34,7 @@ Provide enough implementation details so that an engineer could deploy your meth
 Method should be scalable as more stocks are added
 Method should output sample paths
 
-Forecasts:
+### Forecasts:
 
 You will need to produce 500 sample paths for the closing price for each stock 
 for the 14 weeks between 11/1/2019 to 1/31/2020. Refer to the template 
@@ -43,8 +43,9 @@ naming convention forecasts_stocks_group#.csv matching the exact column format.
 The report and forecasts are both due by: Jun 10 9pm
 
 
-Data:
-A csv file containing each stock time series has been uploaded here.
+### Data:
+
+A csv file containing each stock time series has been uploaded [here](data/stock_series_train.csv).
 The stock time series were taken from https://finance.yahoo.com/. 
 Each stock has been anonymized with the intention that students only utilize
 information from the time series provided for inference and forecasting.
