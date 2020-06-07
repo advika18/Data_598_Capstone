@@ -28,6 +28,7 @@ min_date = min(stocks$Date)
 max_date = max(stocks$Date)
 stocks <- stocks %>% group_by(stock_id) %>% complete(Date = seq.Date(min_date, max_date, by="week"))
 
+
 ### creating new variables for gradient boosting and random forests
 stocks_new <- stocks %>% 
   group_by(stock_id) %>%
@@ -135,6 +136,7 @@ run_methods <- function(stocks){
   }
   print(paste('random forest Mean Error = ', mean(mean_err_r), ' Mean crps = ', mean(mean_crps)))
 }
+stocks_new <- stocks_new %>% filter( stock_id ==8)
 
 
 run_methods(stocks_new)
@@ -150,7 +152,7 @@ run_methods(stocks_new)
 # fore <- fit %>% forecast(h=43)
 # fore %>% autoplot(stock_2) + autolayer(filter(stocks,stock_id==2,year(Date)==2019))
 # accuracy(fore,stock_2)
-# 
+
 # crps_sample(stock_2$Close[158:200],matrix(fore$Close,nrow = 43,ncol=1))
 # calc_crps = function(actual_path, sample_paths) {
 #   
