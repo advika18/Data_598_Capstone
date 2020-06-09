@@ -100,7 +100,6 @@ rf_iteration <- function(stocks, w){
   #randomforest regressor
   rf <- randomForest(x = as.matrix(X_train), 
                    y = y_train$Close,
-                   objective = 'regression',
                    num_threads = 2,
                    verbose = -1)
   p <- predict(rf, as.matrix(X_test))
@@ -135,15 +134,15 @@ run_methods <- function(stocks){
     mean_crps[w - (n_week+1)] = err$crps_error
   }
   print(paste('Baseline Mean Error = ', mean(mean_err), ' Mean crps = ', mean(mean_crps)))
-  ###filtering stocks because the rest of them have NAs
+
   ###lgbm method
   print("light gradient boosting")
   mean_err_l = rep(NA, n_test)
   mean_crps_l = rep(NA, n_test)
   for (w in n_week:(n_test+n_week)){
-    error <- lgb_iteration(stocks_fil, w)
+    err <- lgb_iteration(stocks_fil, w)
     print(paste('Week ', w, "error: ", err$error, "crps: ", err$crps_error))
-    mean_err_l[w-(n_week+1)] = error
+    mean_err_l[w-(n_week+1)] = err$error
     mean_crps_l[w - (n_week+1)] = err$crps_error
   }
   print(paste('lgbm Mean Error = ', mean(mean_err_l), ' Mean crps = ', mean(mean_crps_l)))
@@ -153,21 +152,21 @@ run_methods <- function(stocks){
   mean_err_r = rep(NA, n_test)
   mean_crps_r = rep(NA, n_test)
   for (w in n_week:(n_test+n_week)){
-    error <- rf_iteration(stocks_fil, w)
+    err <- rf_iteration(stocks_fil, w)
     print(paste('Week ', w, "error: ", err$error, "crps: ", err$crps_error))
-    mean_err_r[w-(n_week+1)] = error
+    mean_err_r[w-(n_week+1)] = err$error
     mean_crps_r[w - (n_week+1)] = err$crps_error
   }
   print(paste('random forest Mean Error = ', mean(mean_err_r), ' Mean crps = ', mean(mean_crps_r)))
-  
+
   ### xgboost
   print("xgboost")
   mean_err_x = rep(NA, n_test)
   mean_crps_x = rep(NA, n_test)
   for (w in n_week:(n_test+n_week)){
-    error <- xgb_iteration(stocks_fil, w) #running on all stocks
+    err <- xgb_iteration(stocks, w) #running on all stocks
     print(paste('Week ', w, "error: ", err$error, "crps: ", err$crps_error))
-    mean_err_r[w-(n_week+1)] = error
+    mean_err_x[w-(n_week+1)] = err$error
     mean_crps_x[w - (n_week+1)] = err$crps_error
   }
   print(paste('xgboost Mean Error = ', mean(mean_err_x), ' Mean crps = ', mean(mean_crps_x)))
