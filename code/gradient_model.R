@@ -74,13 +74,23 @@ xgb_iteration <- function(stocks, w){
                                           last_1_week_close))
   y_train <- as.data.frame(train %>% select(stock_id, Close))
   y_test <- as.data.frame(test %>% select(stock_id, Close))
-  #LightGBM regressor
-  xgbm <- xgboost(as.matrix(X_train), 
-                   y_train$Close,
-                   nrounds = 100, 
-                   missing = NA,
-                   num_threads = 2,
-                   verbose = 0)
+  
+  param <- list(booster = "gblinear"
+                , objective = "reg:linear"
+  )
+  
+  X_train[is.na(X_train)]<-(-1)
+  y_train[is.na(y_train)]<-(-1)
+  xgbm <- xgboost(
+    as.matrix(X_train),
+    y_train$Close,
+    nrounds = 100,
+    missing = -1,
+    params =
+      param,
+    num_threads = 2,
+    verbose = 0
+  )
   p <- predict(xgbm, as.matrix(X_test))
   error <- rmsle(p, y_test$Close, na.rm = TRUE)
   crps_error <- crps_sample(test$Close,matrix(p,nrow = length(p),ncol=1))
@@ -123,7 +133,8 @@ run_methods <- function(stocks){
   n_week = 201
   
   print("baseline")
-  stocks_fil <- stocks %>% filter(stock_id==6 | stock_id ==8)
+  stocks_fil <- stocks %>% filter(stock_id == 6)
+  #stocks_fil <- stocks %>% filter(stock_id==6 | stock_id ==8)
   
   mean_err = rep(NA, n_test)
   mean_crps = rep(NA, n_test)
@@ -164,7 +175,7 @@ run_methods <- function(stocks){
   mean_err_x = rep(NA, n_test)
   mean_crps_x = rep(NA, n_test)
   for (w in n_week:(n_test+n_week)){
-    err <- xgb_iteration(stocks, w) #running on all stocks
+    err <- xgb_iteration(stocks_fil, w) #running on all stocks
     print(paste('Week ', w, "error: ", err$error, "crps: ", err$crps_error))
     mean_err_x[w-(n_week+1)] = err$error
     mean_crps_x[w - (n_week+1)] = err$crps_error
