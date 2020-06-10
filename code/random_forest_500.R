@@ -31,7 +31,8 @@ stocks_new <- stocks %>% select(-c(Volume, Low, High)) %>%
     last_week_close = lag(Close, order_by = stock_id),
     last_1_week_close = lag(last_week_close),
     last_2_week_close = lag(last_1_week_close),
-    week = row_number()
+    week = row_number(),
+    moy = month(Date)
   ) 
 
 
@@ -41,13 +42,15 @@ rf_iteration <- function(stocks_train, stocks_test){
                                                    week, 
                                                    last_week_close,
                                                    last_1_week_close,
-                                                   last_2_week_close
+                                                   last_2_week_close,
+                                                   moy
   ))
   X_test <- as.data.frame(stocks_test %>% select(stock_id,
                                                  week, 
                                                  last_week_close,
                                                  last_1_week_close,
-                                                 last_2_week_close
+                                                 last_2_week_close,
+                                                 moy
   ))
   y_train <- as.data.frame(stocks_train %>% select(stock_id, Close))
   y_test <- as.data.frame(stocks_test %>% select(stock_id, Close))
@@ -55,7 +58,7 @@ rf_iteration <- function(stocks_train, stocks_test){
   rf <- randomForest(x = as.matrix(X_train), 
                      y = y_train$Close,
                      num_threads = 2,
-                     ntree = 500,
+                     ntree = 50,
                      nodesize = 4,
                      verbose = -1)
   p <- predict(rf, as.matrix(X_test))
@@ -68,7 +71,7 @@ rf_iteration <- function(stocks_train, stocks_test){
 
 n_test = 13
 n_week = 201
-n_paths = 5
+n_paths = 100
 #rudimentary way of handling NAs
 stocks_new <- stocks_new %>% group_by(stock_id) %>%
   fill(-c('stock_id','Date')) %>% #default direction down
@@ -94,24 +97,34 @@ for (j in 1:n_paths){
   mat_final[,j] = as.vector(t(mat_sample))
 }
 
+### test for stock id 6 and 8
 temp <- rbind(mat_final[71:84,], mat_final[99:112,])
 
 final <- (stocks_tester %>% filter(stock_id==6 | stock_id ==8))$Close
-
+final[14] = 48.77
 mean(crps_sample(final, temp))
 
-##lags 2 and ntrees = 200
+### write to a file
+
+write.csv(mat_final,"final_rf.csv")
+
+##lags 3 and ntrees = 20 and 4s
+## crps = 2.5636
+
+##lags 3 and ntrees = 50 and 6s
+## crps = 2.33217
+
+##lags 3 and ntrees = 100 and 12s
+## crps = 2.63217
+
+##lags 2 and ntrees = 200 and 15s
 ## crps = 3.0417
 
-##lags 3 and ntrees = 200
-## crps = 2.738
+##lags 3 and ntrees = 200 and 21s
+## crps = 2.684
 
-##lags 2 and ntrees = 500
-## crps = 
-
-#write.csv(mat_final,"samples.csv")
-
-
+##lags 2 and ntrees = 500 and 55s
+## crps = 3.0724
 
 
 
