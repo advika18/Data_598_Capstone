@@ -24,13 +24,13 @@ make_rw <- function(ts, num_steps) {
   df <- round(max_LL$maximum)
   
   # Generate noise terms from t distribution
-  x <- rt(path_length, df)
-  
-  # Add start point of walk to noise terms
-  x <- x + tail(time_series, 1)
+  x <- rt(num_steps, df)
   
   # Generate random walk
   rw <- cumsum(x)
+  
+  # Add start point of walk to noise terms
+  rw <- rw + tail(ts, 1)
   
   return(rw)
 }
