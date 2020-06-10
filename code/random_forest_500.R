@@ -30,6 +30,7 @@ stocks_new <- stocks %>% select(-c(Volume, Low, High)) %>%
   mutate(#log_close = log(Close),
     last_week_close = lag(Close, order_by = stock_id),
     last_1_week_close = lag(last_week_close),
+    last_2_week_close = lag(last_1_week_close),
     week = row_number()
   ) 
 
@@ -39,12 +40,14 @@ rf_iteration <- function(stocks_train, stocks_test){
   X_train <- as.data.frame(stocks_train %>% select(stock_id, 
                                                    week, 
                                                    last_week_close,
-                                                   last_1_week_close
+                                                   last_1_week_close,
+                                                   last_2_week_close
   ))
   X_test <- as.data.frame(stocks_test %>% select(stock_id,
                                                  week, 
                                                  last_week_close,
-                                                 last_1_week_close
+                                                 last_1_week_close,
+                                                 last_2_week_close
   ))
   y_train <- as.data.frame(stocks_train %>% select(stock_id, Close))
   y_test <- as.data.frame(stocks_test %>% select(stock_id, Close))
@@ -57,10 +60,11 @@ rf_iteration <- function(stocks_train, stocks_test){
                      verbose = -1)
   p <- predict(rf, as.matrix(X_test))
   error <- rmsle(p, y_test$Close, na.rm = TRUE)
-  #crps_error <- crps_sample(test$Close,matrix(p,nrow = length(p),ncol=1))
-  crps_error <- 1
-  return(list(y_pred =p, error = error, crps_error = crps_error))
+
+  return(list(y_pred =p, error = error))
 }
+
+
 
 n_test = 13
 n_week = 201
@@ -69,6 +73,8 @@ n_paths = 5
 stocks_new <- stocks_new %>% group_by(stock_id) %>%
   fill(-c('stock_id','Date')) %>% #default direction down
   fill(-c('stock_id','Date'),.direction = "updown") %>% ungroup()
+
+stocks_tester <- stocks_new %>% filter(week >= n_week)
 ##initialize final matrix of all sample paths
 mat_final = matrix(numeric(294*n_paths), nrow = 294, ncol = n_paths)
 
@@ -88,10 +94,20 @@ for (j in 1:n_paths){
   mat_final[,j] = as.vector(t(mat_sample))
 }
 
+temp <- rbind(mat_final[71:84,], mat_final[99:112,])
 
+final <- (stocks_tester %>% filter(stock_id==6 | stock_id ==8))$Close
 
+mean(crps_sample(final, temp))
 
+##lags 2 and ntrees = 200
+## crps = 3.0417
 
+##lags 3 and ntrees = 200
+## crps = 2.738
+
+##lags 2 and ntrees = 500
+## crps = 
 
 #write.csv(mat_final,"samples.csv")
 
