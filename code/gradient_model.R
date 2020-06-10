@@ -133,7 +133,7 @@ run_methods <- function(stocks){
   n_week = 201
   
   print("baseline")
-  stocks_fil <- stocks %>% filter(stock_id == 6)
+  stocks_fil <- stocks %>% filter(stock_id == 8)
   #stocks_fil <- stocks %>% filter(stock_id==6 | stock_id ==8)
   
   mean_err = rep(NA, n_test)
@@ -141,8 +141,8 @@ run_methods <- function(stocks){
   for (w in n_week:(n_test+n_week)){
     err <- baseline_iteration(stocks_fil, w)
     print(paste('Week ', w, "error: ", err$error, "crps: ", err$crps_error))
-    mean_err[w-(n_week+1)] = err$error
-    mean_crps[w - (n_week+1)] = err$crps_error
+    mean_err[(w+1)-n_week] = err$error
+    mean_crps[(w+1)-n_week] = err$crps_error
   }
   print(paste('Baseline Mean Error = ', mean(mean_err), ' Mean crps = ', mean(mean_crps)))
 
@@ -153,8 +153,8 @@ run_methods <- function(stocks){
   for (w in n_week:(n_test+n_week)){
     err <- lgb_iteration(stocks_fil, w)
     print(paste('Week ', w, "error: ", err$error, "crps: ", err$crps_error))
-    mean_err_l[w-(n_week+1)] = err$error
-    mean_crps_l[w - (n_week+1)] = err$crps_error
+    mean_err_l[(w+1)-n_week] = err$error
+    mean_crps_l[(w+1)-n_week] = err$crps_error
   }
   print(paste('lgbm Mean Error = ', mean(mean_err_l), ' Mean crps = ', mean(mean_crps_l)))
   
@@ -165,8 +165,8 @@ run_methods <- function(stocks){
   for (w in n_week:(n_test+n_week)){
     err <- rf_iteration(stocks_fil, w)
     print(paste('Week ', w, "error: ", err$error, "crps: ", err$crps_error))
-    mean_err_r[w-(n_week+1)] = err$error
-    mean_crps_r[w - (n_week+1)] = err$crps_error
+    mean_err_r[(w+1)-n_week] = err$error
+    mean_crps_r[(w+1)-n_week] = err$crps_error
   }
   print(paste('random forest Mean Error = ', mean(mean_err_r), ' Mean crps = ', mean(mean_crps_r)))
 
@@ -177,8 +177,8 @@ run_methods <- function(stocks){
   for (w in n_week:(n_test+n_week)){
     err <- xgb_iteration(stocks_fil, w) #running on all stocks
     print(paste('Week ', w, "error: ", err$error, "crps: ", err$crps_error))
-    mean_err_x[w-(n_week+1)] = err$error
-    mean_crps_x[w - (n_week+1)] = err$crps_error
+    mean_err_x[(w+1)-n_week] = err$error
+    mean_crps_x[(w+1)-n_week] = err$crps_error
   }
   print(paste('xgboost Mean Error = ', mean(mean_err_x), ' Mean crps = ', mean(mean_crps_x)))
 }
@@ -225,8 +225,15 @@ run_methods(stocks_new)
 # }
 # print(x)
 
+df_temp <- df[df$stock_id==8,]$Close
 
+x <- auto.arima(df_temp[1:200])
 
+summary(x)
+
+fore <- forecast(x,14)
+fore$mean
+cr <- crps_sample(df_temp[201:214],matrix(fore$mean,nrow = 14,ncol=1))
 
 
 

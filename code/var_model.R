@@ -45,12 +45,12 @@ summary(ca.jo(select(stocks,2,3,4,5), type="trace", K=2, ecdet="none", spec="lon
 
 ##requires differencing to make it stationary
 num_diff <- 1 #single differencing for most of the series
-stocks_train_diff <- stocks_train #%>% 
-  #select(-c('16','17','18','19','20','21')) %>% 
+stocks_train_diff <- stocks_train %>% 
+  select('1','2','6','8') #%>% 
   #drop_na() ##only checking for some stocks right now, how to tackle NA
 #stocks_train_diff <- stocks_train %>% drop_na() 
 
-stocks_train_diff <- diff(as.matrix(select(stocks_train_diff,-Date)), differences = num_diff)
+stocks_train_diff_1 <- diff(as.matrix(select(stocks_train_diff,'1','2','6','8')), differences = num_diff)
 
 
 require(vars) ##installing it later because it clashes with dplyr select
@@ -64,6 +64,7 @@ test_one <- just_one$fcst
 #last value of train set
 pred_one <- 133.54 + cumsum(test_one)
 crps_sample(stocks_test$`8`, matrix(pred_one,nrow = length(pred_one),ncol=1))
+crps_sample(stocks_test$`8`, matrix(test_one,nrow = length(test_one),ncol=1))
 
 base_one <- rep(133.54, 14)
 crps_sample(stocks_test$`8`, matrix(base_one,nrow = length(base_one),ncol=1))
@@ -73,7 +74,9 @@ just_one <- data.frame(future$fcst$X6)
 test_one <- just_one$fcst
 #last value of train set
 pred_one <- 53.24 + cumsum(test_one)
-crps_sample(stocks_test$`6`[1:13], matrix(pred_one,nrow = length(pred_one),ncol=1), )
+x <- as.vector(pred_one)
+crps_sample(stocks_test$`6`[1:13], matrix(pred_one,nrow = length(pred_one),ncol=1) )
+crps_sample(stocks_test$`6`[1:13], matrix(test_one,nrow = length(test_one),ncol=1) )
 
 base_one <- rep(53.24, 13)
 crps_sample(stocks_test$`6`[1:13], matrix(base_one,nrow = length(base_one),ncol=1))
